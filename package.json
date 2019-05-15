@@ -1,0 +1,86 @@
+{
+  "name": "beatles-alpha",
+  "displayName": "beatles-alpha",
+  "description": "cml抢先内测版",
+  "version": "0.2.2",
+  "publisher": "wangzhiliang",
+  "icon": "images/logo.png",
+  "keywords": [
+    "cml",
+    "chameleon",
+    "weex",
+    "miniapp",
+    "javascript"
+  ],
+  "engines": {
+    "vscode": "^0.10.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jalonjs/vscode-cml.git"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Linters",
+    "Formatters",
+    "Other",
+    "Extension Packs",
+    "Language Packs"
+  ],
+  "activationEvents": [
+    "onLanguage:cml"
+  ],
+  "main": "./client/out/extension",
+  "contributes": {
+    "languages": [
+      {
+        "id": "cml",
+        "aliases": [
+          "cml"
+        ],
+        "extensions": [
+          ".cml",
+          ".interface"
+        ],
+        "configuration": "contributes/languages/cml.configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "cml",
+        "scopeName": "source.cml",
+        "path": "contributes/syntaxes/cml.grammars.json",
+        "embeddedLanguages": {
+          "source.css": "css",
+          "source.css.scss": "scss",
+          "source.css.less": "less",
+          "source.sass": "sass",
+          "source.stylus": "stylus",
+          "source.js": "javascript",
+          "source.ts": "typescript",
+          "source.json": "json"
+        }
+      }
+    ],
+    "snippets": [
+      {
+        "language": "cml",
+        "path": "contributes/snippets/snippets.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run compile",
+    "compile": "tsc -b",
+    "watch": "tsc -b -w",
+    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+    "test": "sh ./scripts/e2e.sh"
+  },
+  "devDependencies": {
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^8.0.0",
+    "tslint": "^5.11.0",
+    "typescript": "^3.1.3"
+  }
+}

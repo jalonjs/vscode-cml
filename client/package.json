@@ -1,0 +1,25 @@
+{
+	"name": "cml-lsp-client",
+	"description": "cml-lsp-client",
+	"author": "wangzhiliang",
+	"license": "MIT",
+	"version": "0.1.0",
+	"publisher": "wangzhiliang",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/jalonjs/vscode-cml"
+	},
+	"engines": {
+		"vscode": "^1.23.0"
+	},
+	"scripts": {
+		"update-vscode": "vscode-install",
+		"postinstall": "vscode-install"
+	},
+	"dependencies": {
+		"vscode-languageclient": "^4.1.4"
+	},
+	"devDependencies": {
+		"vscode": "^1.1.34"
+	}
+}

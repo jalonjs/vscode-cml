@@ -1,0 +1,37 @@
+{
+	"cml {{}}": {
+		"prefix": "{{",
+		"body": [
+			"{{$0}}"
+		],
+		"description": "cml {{}}"
+	},
+	"cml component": {
+		"prefix": "component",
+		"body": [
+			"<component is=\"{{$1}}\"${4: shrinkcomponents=\"${2:comp1},${3:comp2}\"}></component>"
+		],
+		"description": "cml 动态组件 component"
+	},
+	"cml cpx": {
+		"prefix": "cpx",
+		"body": [
+			"cpx"
+		],
+		"description": "cml CMSS cpx"
+	},
+	"cml wcpx": {
+		"prefix": "width: cpx;",
+		"body": [
+			"width: $1cpx;$0"
+		],
+		"description": "cml CMSS cpx"
+	},
+	"cml hcpx": {
+		"prefix": "height: cpx;",
+		"body": [
+			"height: $1cpx;$0"
+		],
+		"description": "cml CMSS cpx"
+	}
+}
