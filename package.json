@@ -13,7 +13,7 @@
     "javascript"
   ],
   "engines": {
-    "vscode": "^0.10.1"
+    "vscode": "^1.23.0"
   },
   "repository": {
     "type": "git",
