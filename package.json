@@ -1,8 +1,8 @@
 {
   "name": "beatles-alpha",
   "displayName": "beatles-alpha",
-  "description": "cml抢先内测版",
-  "version": "0.2.4",
+  "description": "cml内测版",
+  "version": "0.2.5",
   "publisher": "wangzhiliang",
   "icon": "images/logo.png",
   "keywords": [
