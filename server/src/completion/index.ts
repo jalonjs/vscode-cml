@@ -5,7 +5,7 @@ import { getCompletionItemsStyle } from './style';
 
 export function getCompletionItems (projectPath: string, doc: TextDocument, position: Position): CompletionList {
 	let docText = doc.getText();
-
+	
 	if (inTemplate(doc, docText, position)) {
 		return getCompletionItemsTemplate(projectPath, doc, docText, position);
 	}
@@ -18,6 +18,6 @@ export function getCompletionItems (projectPath: string, doc: TextDocument, posi
 		isIncomplete: true,
 		items: []
 	};
-	return snippetCompletionsList;
 
+	return snippetCompletionsList;
 }

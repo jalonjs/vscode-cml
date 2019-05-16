@@ -1,24 +1,38 @@
 import { CompletionList, CompletionItem, Position, CompletionItemKind, InsertTextFormat, TextDocument } from 'vscode-languageserver';
 import { getInputWord, getTextStartToPosition } from '../../utils/doc';
-import { getCSSLanguageService } from 'vscode-css-languageservice';
+import { getLESSLanguageService } from 'vscode-css-languageservice';
 
 export function getCompletionItemsStyle (projectPath: string, doc: TextDocument, docText: string, position: Position): CompletionList {
-	let service = getCSSLanguageService();
-	const styleText = docText.match(/<style.*?>([\s\S]*)<\/style>/)[1];
+	let service = getLESSLanguageService();
+	let lines = docText.split(/[\n]/g);
+	let styleLineStartIndex = 0;
+	let styleLineEndIndex = 0;
+	lines.forEach((line, index) => {
+		if (line.match(/^[\s]*<style/)) {
+			styleLineStartIndex = index;
+		}
+		if (line.match(/^[\s]*<\/style>/)) {
+			styleLineEndIndex = index;
+		}
+	});
+	const styleText = lines.slice(styleLineStartIndex + 1, styleLineEndIndex).join('\n');
 	let cssDoc = TextDocument.create('', 'css', 1, styleText);
 	let stylesheet = service.parseStylesheet(cssDoc);
-	let result = getCSSLanguageService().doComplete(doc, position, stylesheet);
+	position.line = position.line - (styleLineStartIndex + 1);
+	let result = getLESSLanguageService().doComplete(cssDoc, position, stylesheet);
+	
 	let CPL = {
 		isIncomplete: result.isIncomplete,
-		items: []// .[..result] 或直接使用原返回不行
+		items: []
 	};
 
 	result.items.forEach(item => {
 		CPL.items.push({
+			command: item.command,
 			label: item.label,
-			kind: CompletionItemKind.Property,
+			kind: item.kind,
 			insertTextFormat: InsertTextFormat.Snippet,
-			insertText: `${item.label}: $0`,
+			insertText: item.textEdit.newText.startsWith(':') ? item.textEdit.newText.slice(1) : item.textEdit.newText,
 			documentation: item.documentation
 		});
 	});
