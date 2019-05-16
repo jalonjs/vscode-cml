@@ -14,7 +14,8 @@ export function getCompletionItemsTemplate (projectPath: string, doc: TextDocume
 	};
 
 
-	let usingCompStr: string = docText.match(/["']usingComponents["']\:\s*(\{[\s\S]*?\})/)[1];
+	let usingCompMatch = docText.match(/["']usingComponents["']\:\s*(\{[\s\S]*?\})/);
+	let usingCompStr = usingCompMatch ? usingCompMatch[1] : '{}';
 	let usingCompObj: Object = (new Function(`
 	    return ${usingCompStr};
 	`))();
