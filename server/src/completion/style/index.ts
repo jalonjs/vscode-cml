@@ -1,7 +1,6 @@
 import { CompletionList, CompletionItem, Position, CompletionItemKind, InsertTextFormat, TextDocument } from 'vscode-languageserver';
 import { getInputWord, getTextStartToPosition } from '../../utils/doc';
 import { getCSSLanguageService } from 'vscode-css-languageservice';
-import * as _ from 'lodash';
 
 export function getCompletionItemsStyle (projectPath: string, doc: TextDocument, docText: string, position: Position): CompletionList {
 	let service = getCSSLanguageService();

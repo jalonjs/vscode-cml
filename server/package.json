@@ -1,60 +1,25 @@
 {
- "name": "cml-lsp-server",
- "description": "cml-lsp-server",
- "version": "0.1.0",
- "author": "wangzhiliang",
- "license": "MIT",
- "engines": {
-  "node": "*"
- },
- "repository": {
-  "type": "git",
-  "url": "https://github.com/jalonjs/vscode-cml"
- },
- "dependencies": {
-  "@babel/core": "^7.4.4",
-  "@starptech/prettyhtml": "^0.8.4",
-  "bootstrap-vue-helper-json": "^1.1.1",
-  "buefy-helper-json": "^1.0.2",
-  "element-helper-json": "^2.0.2",
-  "eslint": "^5.9.0",
-  "eslint-plugin-vue": "^5.0.0",
-  "gridsome-helper-json": "^1.0.0",
-  "js-beautify": "^1.7.5",
-  "lodash": "^4.17.4",
-  "nuxt-helper-json": "^1.0.0",
-  "parse-gitignore": "^1.0.1",
-  "prettier": "^1.16.4",
-  "prettier-eslint": "^8.8.2",
-  "read-pkg-up": "^4.0.0",
-  "resolve": "^1.8.1",
-  "stylus": "^0.54.5",
-  "stylus-supremacy": "^2.12.6",
-  "typescript": "^3.3.4000",
-  "vscode-css-languageservice": "^3.0.13",
-  "vscode-emmet-helper": "^1.1.19",
-  "vscode-languageserver": "^5.3.0-next.4",
-  "vscode-languageserver-types": "^3.15.0-next.1",
-  "vscode-uri": "^1.0.1",
-  "vue-onsenui-helper-json": "^1.0.2",
-  "vuetify-helper-json": "^1.0.0"
- },
- "scripts": {},
- "devDependencies": {
-  "vscode-languageserver-types": "^3.14.0",
-  "@types/eslint": "^4.16.5",
-  "@types/glob": "^7.1.0",
-  "@types/js-beautify": "^1.8.0",
-  "@types/lodash": "^4.14.118",
-  "@types/mocha": "^5.2.5",
-  "@types/node": "^10.12.10",
-  "@types/prettier": "^1.16.1",
-  "@types/read-pkg-up": "^3.0.1",
-  "@types/resolve": "0.0.8",
-  "codecov": "^3.0.4",
-  "glob": "^7.1.2",
-  "mocha": "^5.2.0",
-  "nyc": "^13.0.1",
-  "source-map-support": "^0.5.0"
- }
+  "name": "cml-lsp-server",
+  "description": "cml-lsp-server",
+  "version": "0.1.0",
+  "author": "wangzhiliang",
+  "license": "MIT",
+  "engines": {
+    "node": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jalonjs/vscode-cml"
+  },
+  "dependencies": {
+    "babel-core": "^6.26.3",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-0": "^6.24.1",
+    "vscode-css-languageservice": "^3.0.13",
+    "vscode-languageserver": "^5.3.0-next.4",
+    "vscode-languageserver-types": "^3.15.0-next.1",
+    "vscode-uri": "^1.0.1"
+  },
+  "scripts": {},
+  "devDependencies": {}
 }

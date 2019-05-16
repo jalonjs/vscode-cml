@@ -5,7 +5,7 @@ export const UB_COM_PATH: string[] = [
 	'node_modules/@didi/chameleon-ui-builtin/components'
 ];
 
-export const UB_TAGS = ['view', 'text', 'block', 'cell'];
+export const UB_TAGS = ['view', 'text', 'block', 'cell', 'slot'];
 
 let ubcNames: string[] = [];
 export function getUiBuiltinNames (projectPath: string): string[] {

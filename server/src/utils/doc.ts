@@ -1,19 +1,30 @@
 import { TextDocumentPositionParams, TextDocument, TextDocuments, Position } from 'vscode-languageserver';
-import * as babel from '@babel/core';
+import * as babel from 'babel-core';
+import { join } from 'path';
 
 export function getEs5Code (es67) {
-	// for debugger issue
-	// global.OPCWD = process.cwd();
-	// process.chdir(__dirname.match(/(.*)\/src/)[1]);
-	const es5 = babel.transformSync(es67, {
+	// babel找不到包 加filename选项或者更改process执行的目录
+	// const cwd = process.cwd();
+	// process.chdir(__dirname);
+	const es5 = babel.transform(es67, {
 		"presets": [
-			"@babel/preset-env"
+			[
+				"env",
+				{
+					"targets": {
+						"browsers": [
+							"> 1%",
+							"last 2 versions",
+							"not ie <= 8"
+						]
+					}
+				}
+			],
+			"stage-0"
 		],
-		"plugins": [
-			"@babel/plugin-proposal-class-properties"
-		]
+		"filename": join(__dirname, 'doc.js')
 	}).code;
-	// process.chdir(global.OPCWD);
+	// process.chdir(cwd);
 	return es5;
 }
 

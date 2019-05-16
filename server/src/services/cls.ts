@@ -7,7 +7,6 @@ import {
 } from 'vscode-languageserver';
 import { DocumentService } from './documentService';
 import { getCompletionItems } from '../completion';
-import { join } from 'path';
 
 export class CLS {
 	private projectPath: string;
@@ -41,7 +40,7 @@ export class CLS {
 
 	onCompletion ({ textDocument, position }: TextDocumentPositionParams): CompletionList {
 		const doc = this.documentService.getDocument(textDocument.uri)!;
-		this.projectPath = textDocument.uri.match(/^(.*)(?=\/src)/)[0].replace(/^file:\/\//, '');
+		this.projectPath = textDocument.uri.match(/^file:(.*)(?=\/src)/)[1];
 		return getCompletionItems(this.projectPath, doc, position);
 	}
 
