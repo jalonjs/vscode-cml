@@ -1,11 +1,8 @@
 import { TextDocumentPositionParams, TextDocument, TextDocuments, Position } from 'vscode-languageserver';
-import * as babel from 'babel-core';
-// import * as types from 'babel-types';
 import * as parser from "@babel/parser";
 import traverse from "@babel/traverse";
 import * as types from "@babel/types";
 import generate from '@babel/generator';
-import { join } from 'path';
 
 interface ComCls {
 	name: string;
@@ -75,9 +72,13 @@ export function getTypingComInfo (docText: string, position: Position): TypingCo
 		tagName: '',
 		value: ''
 	};
-	let code = docText.match(/<template>[\s\S]*<\/template>/);
-	if (code) {
-		const ast = getAST(code[0]);
+	let codeTpl = docText.match(/<template>[\s\S]*<\/template>/);
+	if (codeTpl) {
+		let code = codeTpl[0].replace(/@/g, '$').replace(/{{([\s]*)(.*?)([\s]*)}}/g, ($0, $1, $2, $3) => {
+			$2 = $2.replace(/[\.\[\]]/g, '_');
+			return `{{${$1}${$2}${$3}}}`;
+		}); // 替换掉babel不兼容的
+		const ast = getAST(code);
 		traverse(ast, {
 			enter (path) {
 				if (isNodeMatchPst(path.node, position)) {
