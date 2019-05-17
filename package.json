@@ -1,7 +1,7 @@
 {
-  "name": "beatles-alpha",
-  "displayName": "beatles-alpha",
-  "description": "cml内测版",
+  "name": "cml",
+  "displayName": "cml",
+  "description": "Chameleon vscode 扩展",
   "version": "0.2.5",
   "publisher": "wangzhiliang",
   "icon": "images/logo.png",
