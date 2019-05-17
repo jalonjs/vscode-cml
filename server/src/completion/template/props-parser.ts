@@ -50,33 +50,9 @@ export function getProps (projectPath: string, comPath: string | undefined, comN
 
 	let compSugStr = readFileSync(comPath).toString('utf8');
 	let compScriptStr = compSugStr.match(/<script>([\s\S]*?)<\/script>/)[1];
-	let compClassStr = compScriptStr.match(/class\s+(.+?)(\s+implements\s+.+)?\s+{[\s\S]*}/);
-	let compClassName = compClassStr[1].trim();
-	let compClassStrSpl = compClassStr[0].replace(/implements\s+.*?\s+(?=\{)/, '');
 
 	// 兼容在最后一个props括号后加逗号的情况...
-	compClassStrSpl = compClassStrSpl.replace(/,[\r\n\s]*}/g, '}').replace(/}[\r\n\s]*}/g, '}}');
-	let propStr = compClassStrSpl.match(/props[\s\S]*?=([\s\S]*?)}}/)[0];
-	let compClassStrSplOnlyProps = `
-		class ${compClassName} {
-			${propStr}
-		}
-	`;
-	let compClassEs5 = utils.getEs5Code(compClassStrSplOnlyProps);
+	let comCls = utils.getPropsByAST(compScriptStr);
 
-	// 两种类型分别处理
-	comInstance = (new Function(`
-		// 兼容直接出现的require方法
-		let require = uri => uri;
-		let ins = {};
-		try {
-			${compClassEs5};
-			ins = new ${compClassName}();
-		}catch(e) {
-			ins = {}
-		}
-		return ins;
-	`))();
-
-	return comInstance.props;
+	return comCls.props;
 }

@@ -2,7 +2,7 @@
   "name": "cml",
   "displayName": "cml",
   "description": "Chameleon vscode 扩展",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "publisher": "wangzhiliang",
   "icon": "images/logo.png",
   "keywords": [

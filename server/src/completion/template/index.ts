@@ -1,18 +1,14 @@
 import { CompletionList, CompletionItem, Position, CompletionItemKind, InsertTextFormat, TextDocument } from 'vscode-languageserver';
-import { getInputWord, getTextStartToPosition } from '../../utils/doc';
+import { getTypingComInfo } from '../../utils/doc';
 import { getProps } from './props-parser';
 import { getUiBuiltinNames } from './ui-builtin';
 import { directives } from './directives';
 
 export function getCompletionItemsTemplate (projectPath: string, doc: TextDocument, docText: string, position: Position): CompletionList {
-	let textStartToPosition = getTextStartToPosition(doc, docText, position);
-	let inputWord = getInputWord(docText, position);
-
 	let snippetCompletionsList: CompletionList = {
 		isIncomplete: true,
 		items: []
 	};
-
 
 	let usingCompMatch = docText.match(/["']usingComponents["']\:\s*(\{[\s\S]*?\})/);
 	let usingCompStr = usingCompMatch ? usingCompMatch[1] : '{}';
@@ -20,22 +16,25 @@ export function getCompletionItemsTemplate (projectPath: string, doc: TextDocume
 	    return ${usingCompStr};
 	`))();
 
-	const matchComProps = textStartToPosition.match(new RegExp(`<([^</>\\s]+)[\\s\\n\\t\\r]*([^</>\\s]+=(["']).*?\\3\\s*)*[\\s\\n\\t\\r]*${inputWord}$`));
-	const isTypeComProps = !!matchComProps;
+	const typingComInfo = getTypingComInfo(docText, position);
 
-	if (isTypeComProps) {
-		const comName = matchComProps[1];
+	if (typingComInfo.typingKind == 2) {
+		const comName = typingComInfo.tagName;
 		let comPath = usingCompObj[comName];
 		let comProps = getProps(projectPath, comPath, comName, doc);
 		Object.keys(comProps).forEach(k => {
-			let defaultValue = (typeof comProps[k].default == 'function') ? comProps[k].default() : comProps[k].default + '';
 			let key = k.replace(/[A-Z]/g, uw => `-${uw.toLowerCase()}`);
+			const keyNode = comProps[k];
+			let detail = '';
+			Object.keys(keyNode).forEach(name => {
+				detail = detail + `${name}: ${keyNode[name]}\n`;
+			});
 			snippetCompletionsList.items.push({
 				label: `${key}="" 当前组件的属性`,
 				kind: CompletionItemKind.Property,
 				insertText: `${key}="$0"`,
 				insertTextFormat: InsertTextFormat.Snippet,
-				detail: `type: ${comProps[k].type.name || ''} \n default: "${defaultValue || ''}"`
+				detail: detail
 			});
 		});
 		// 指令
@@ -47,7 +46,7 @@ export function getCompletionItemsTemplate (projectPath: string, doc: TextDocume
 				insertTextFormat: InsertTextFormat.Snippet
 			});
 		});
-	} else {
+	} else if (typingComInfo.typingKind == 1) {
 		// 分为内置组件和非内置组件 将两者都返回
 		let ubcKeys = getUiBuiltinNames(projectPath);
 		let compsList = Object.keys(usingCompObj).concat(ubcKeys);
