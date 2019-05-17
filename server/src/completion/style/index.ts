@@ -1,5 +1,4 @@
 import { CompletionList, CompletionItem, Position, CompletionItemKind, InsertTextFormat, TextDocument } from 'vscode-languageserver';
-import { getInputWord, getTextStartToPosition } from '../../utils/doc';
 import { getLESSLanguageService } from 'vscode-css-languageservice';
 
 export function getCompletionItemsStyle (projectPath: string, doc: TextDocument, docText: string, position: Position): CompletionList {

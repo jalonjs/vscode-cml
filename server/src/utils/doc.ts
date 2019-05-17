@@ -1,38 +1,140 @@
 import { TextDocumentPositionParams, TextDocument, TextDocuments, Position } from 'vscode-languageserver';
 import * as babel from 'babel-core';
+// import * as types from 'babel-types';
+import * as parser from "@babel/parser";
+import traverse from "@babel/traverse";
+import * as types from "@babel/types";
+import generate from '@babel/generator';
 import { join } from 'path';
 
-export function getEs5Code (es67) {
-	// babel找不到包 加filename选项或者更改process执行的目录
-	// const cwd = process.cwd();
-	// process.chdir(__dirname);
-	const es5 = babel.transform(es67, {
-		"presets": [
-			[
-				"env",
-				{
-					"targets": {
-						"browsers": [
-							"> 1%",
-							"last 2 versions",
-							"not ie <= 8"
-						]
-					}
-				}
-			],
-			"stage-0"
-		],
-		"filename": join(__dirname, 'doc.js')
-	}).code;
-	// process.chdir(cwd);
-	return es5;
+interface ComCls {
+	name: string;
+	props: Object;
 }
 
-export function getInputWord (docText: string, position: Position): string {
-	let lines = docText.split(/\r?\n/); // LF or CRLF 两种
-	let lineLeft = lines[position.line].slice(0, position.character);
-	let inputWord = lineLeft.match(/[^\s]*$/)[0];
-	return inputWord;
+export declare namespace TypingKind {
+	type Null = 0;
+	type Tag = 1;
+	type Props = 2;
+}
+
+export interface TypingComInfo {
+	typingKind: TypingKind.Null | TypingKind.Tag | TypingKind.Props;
+	tagName?: string;
+	value: string;
+}
+
+export function getAST (code: string) {
+	const ast = parser.parse(code, {
+		sourceType: 'module',
+		// sourceFilename: join(__dirname, 'doc.js'),
+		"plugins": [
+			"jsx",
+			"flow",
+			"classProperties"
+		]
+	});
+	return ast;
+}
+
+export function getPropsByAST (code: string): ComCls {
+	let comCls: ComCls = {
+		name: '',
+		props: {}
+	};
+
+	traverse(getAST(code), {
+		enter (path) {
+			if (types.isClassDeclaration(path.node)) {
+				comCls.name = path.node.id.name;
+			}
+			if (types.isClassProperty(path.node) && path.node.key.name == 'props') {
+				if (types.isObjectExpression(path.node.value)) {
+					path.node.value.properties.forEach(prop => {
+						if (types.isIdentifier(prop.value)) {
+							comCls.props[prop.key.name] = {
+								default: generate(prop.value).code
+							};
+						} else if (types.isObjectExpression(path.node.value)) {
+							comCls.props[prop.key.name] = {};
+							prop.value.properties.forEach(pprop => {
+								comCls.props[prop.key.name][pprop.key.name] = generate(pprop.value).code;
+							});
+						}
+					});
+				}
+			}
+		}
+	});
+	return comCls;
+}
+
+export function getTypingComInfo (docText: string, position: Position): TypingComInfo {
+	let typingComInfo: TypingComInfo = {
+		typingKind: 0,
+		tagName: '',
+		value: ''
+	};
+	let code = docText.match(/<template>[\s\S]*<\/template>/);
+	if (code) {
+		const ast = getAST(code[0]);
+		traverse(ast, {
+			enter (path) {
+				if (isNodeMatchPst(path.node, position)) {
+					if (types.isJSXText(path.node)) {
+						typingComInfo.typingKind = 1;
+						typingComInfo.value = path.node.value;
+					} else if (types.isJSXElement(path.node)) {
+						path.node.openingElement.attributes.forEach(attrNode => {
+							const startMatch = attrNode.loc.start.line - 1 <= position.line && attrNode.loc.start.column <= position.character;
+							const endMatch = attrNode.loc.end.line - 1 == position.line && attrNode.loc.end.column >= position.character;
+							if (startMatch && endMatch) {
+								typingComInfo.typingKind = 2;
+								typingComInfo.value = attrNode.name.name;
+								typingComInfo.tagName = path.node.openingElement.name.name;
+							}
+						});
+					}
+				}
+			}
+		});
+	}
+
+	return typingComInfo;
+}
+
+function isNodeMatchPst (node, position): Boolean {
+	let matched = false;
+	if (types.isJSXText(node)) {
+		let startMatch = false;
+		if (node.value.match(/^[\s]*\n/)) {
+			startMatch = node.loc.start.line == position.line;
+		} else {
+			startMatch = node.loc.start.line - 1 == position.line && node.loc.start.column <= position.character;
+		}
+		let endMatch = false;
+		if (node.value.match(/\n[\s]*$/)) {
+			endMatch = node.loc.end.line - 1 > position.line;
+		} else {
+			endMatch = node.loc.end.line - 1 == position.line && node.loc.end.column >= position.character;
+		}
+		matched = startMatch && endMatch;
+	}
+	if (types.isJSXElement(node)) {
+		node.openingElement.attributes.forEach(attrNode => {
+			const startMatch = attrNode.loc.start.line - 1 <= position.line && attrNode.loc.start.column <= position.character;
+			const endMatch = attrNode.loc.end.line - 1 == position.line && attrNode.loc.end.column >= position.character;
+			if (startMatch && endMatch) {
+				matched = true;
+			}
+		});
+	}
+	// if (types.isJSXAttribute(node)) {
+	// 	const startMatch = node.loc.start.line - 1 <= position.line && node.loc.start.column <= position.character;
+	// 	const endMatch = node.loc.end.line - 1 == position.line && node.loc.end.column >= position.character;
+	// 	matched = startMatch && endMatch;
+	// }
+	return matched;
 }
 
 export function getTextStartToPosition (doc: TextDocument, docText: string, position: Position): string {
