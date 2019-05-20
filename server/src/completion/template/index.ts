@@ -1,5 +1,5 @@
 import { CompletionList, CompletionItem, Position, CompletionItemKind, InsertTextFormat, TextDocument } from 'vscode-languageserver';
-import { getTypingComInfo } from '../../utils/doc';
+import { getTypingComInfo, TypingKind } from '../../utils/doc';
 import { getProps } from './props-parser';
 import { getUiBuiltinNames } from './ui-builtin';
 import { directives } from './directives';
@@ -18,7 +18,7 @@ export function getCompletionItemsTemplate (projectPath: string, doc: TextDocume
 
 	const typingComInfo = getTypingComInfo(docText, position);
 
-	if (typingComInfo.typingKind == 2) {
+	if (typingComInfo.typingKind == TypingKind.Props) {
 		const comName = typingComInfo.tagName;
 		let comPath = usingCompObj[comName];
 		let comProps = getProps(projectPath, comPath, comName, doc);
@@ -46,7 +46,7 @@ export function getCompletionItemsTemplate (projectPath: string, doc: TextDocume
 				insertTextFormat: InsertTextFormat.Snippet
 			});
 		});
-	} else if (typingComInfo.typingKind == 1) {
+	} else if (typingComInfo.typingKind == TypingKind.Tag) {
 		// 分为内置组件和非内置组件 将两者都返回
 		let ubcKeys = getUiBuiltinNames(projectPath);
 		let compsList = Object.keys(usingCompObj).concat(ubcKeys);

@@ -9,10 +9,10 @@ interface ComCls {
 	props: Object;
 }
 
-export declare namespace TypingKind {
-	type Null = 0;
-	type Tag = 1;
-	type Props = 2;
+export enum TypingKind {
+	Null = 0,
+	Tag = 1,
+	Props = 2
 }
 
 export interface TypingComInfo {
