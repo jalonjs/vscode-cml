@@ -74,10 +74,13 @@ export function getTypingComInfo (docText: string, position: Position): TypingCo
 	};
 	let codeTpl = docText.match(/<template>[\s\S]*<\/template>/);
 	if (codeTpl) {
-		let code = codeTpl[0].replace(/@/g, '$').replace(/{{([\s]*)(.*?)([\s]*)}}/g, ($0, $1, $2, $3) => {
-			$2 = $2.replace(/[\.\[\]]/g, '_');
-			return `{{${$1}${$2}${$3}}}`;
-		}); // 替换掉babel不兼容的
+		let code = codeTpl[0]
+			.replace(/<!--([\s\S]*?)-->/g, '<c>$1</c>') // 注释
+			.replace(/@/g, '$') // @
+			.replace(/{{([\s]*)(.*?)([\s]*)}}/g, ($0, $1, $2, $3) => {
+				$2 = $2.replace(/[\.\[\]]/g, '_'); // {{a.b|a[b|0]}}
+				return `{{${$1}${$2}${$3}}}`;
+			}); // 替换掉babel不兼容的
 		const ast = getAST(code);
 		traverse(ast, {
 			enter (path) {
