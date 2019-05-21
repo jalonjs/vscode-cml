@@ -22,7 +22,7 @@ export function getProps (projectPath: string, comPath: string | undefined, comN
 	} else {
 		// 普通组件
 		let connector = '';
-		switch (comPath.slice(0, 1)) {
+		switch (comPath.charAt(0)) {
 			case '/':
 				connector = 'src';
 				comPath = join(projectPath, connector, comPath);
