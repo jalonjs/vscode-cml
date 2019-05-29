@@ -16,6 +16,14 @@ export class DocumentService {
 		return this.documents.all();
 	}
 
+	get onDidOpen () {
+		return this.documents.onDidOpen;
+	}
+
+	get onDidSave () {
+		return this.documents.onDidSave;
+	}
+
 	get onDidChangeContent () {
 		return this.documents.onDidChangeContent;
 	}

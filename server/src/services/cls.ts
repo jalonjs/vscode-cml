@@ -3,10 +3,12 @@ import {
 	ServerCapabilities,
 	IConnection,
 	CompletionList,
-	TextDocumentPositionParams
+	TextDocumentPositionParams,
+	TextDocumentChangeEvent
 } from 'vscode-languageserver';
 import { DocumentService } from './documentService';
 import { getCompletionItems } from '../completion';
+import { cmlLint } from '../linter';
 
 export class CLS {
 	private projectPath: string;
@@ -36,12 +38,30 @@ export class CLS {
 
 	private setupLSPHandlers () {
 		this.lspConnection.onCompletion(this.onCompletion.bind(this));
+		this.documentService.onDidOpen(this.onDidOpen.bind(this));
+		this.documentService.onDidChangeContent(this.onDidChangeContent.bind(this));
+		this.documentService.onDidSave(this.onDidSave.bind(this));
 	}
 
 	onCompletion ({ textDocument, position }: TextDocumentPositionParams): CompletionList {
 		const doc = this.documentService.getDocument(textDocument.uri)!;
 		this.projectPath = textDocument.uri.match(/^file:(.*)(?=\/src)/)[1];
 		return getCompletionItems(this.projectPath, doc, position);
+	}
+
+	onDidOpen (change: TextDocumentChangeEvent) {
+		this.projectPath = change.document.uri.match(/^file:(.*)(?=\/src)/)[1];
+		cmlLint(change.document, this.lspConnection, this.projectPath);
+	}
+
+	onDidSave (change: TextDocumentChangeEvent) {
+		this.projectPath = change.document.uri.match(/^file:(.*)(?=\/src)/)[1];
+		cmlLint(change.document, this.lspConnection, this.projectPath);
+	}
+
+	onDidChangeContent (change: TextDocumentChangeEvent) {
+		this.projectPath = change.document.uri.match(/^file:(.*)(?=\/src)/)[1];
+		cmlLint(change.document, this.lspConnection, this.projectPath);
 	}
 
 	dispose (): void {
