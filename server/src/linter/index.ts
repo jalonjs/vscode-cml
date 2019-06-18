@@ -47,6 +47,9 @@ export async function cmlLint (textDocument: TextDocument, connection: IConnecti
 			Object.keys(res).forEach(type => {
 				if (type != 'core') {
 					if (res[type].messages.length) {
+						res[type].messages.forEach(msg => {
+							msg.start = res[type].start;
+						});
 						let contentLintItem: ContentLintItem = {
 							file: res[type].file,
 							messages: res[type].messages
@@ -72,7 +75,7 @@ export async function cmlLint (textDocument: TextDocument, connection: IConnecti
 			if (textDocument.uri.match(filePath)) {
 				item.messages.forEach(message => {
 					let start = {
-						line: message.line - 1,
+						line: message.line - 2 + message.start,
 						character: message.column - 1
 					};
 
