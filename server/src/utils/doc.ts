@@ -21,6 +21,15 @@ export interface TypingComInfo {
 	value: string;
 }
 
+interface moduleMethod {
+	name: string;
+	args: []
+}
+
+interface moduleMethods {
+	methods: moduleMethod[];
+}
+
 export function getAST (code: string) {
 	const ast = parser.parse(code, {
 		sourceType: 'module',
