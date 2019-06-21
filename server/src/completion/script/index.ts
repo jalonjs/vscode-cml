@@ -1,5 +1,6 @@
 import { CompletionList, CompletionItem, Position, CompletionItemKind, InsertTextFormat, TextDocument } from 'vscode-languageserver';
-import { getCompletionItemsScriptAPI, isTypingAPI } from './api';
+import { getCompletionItemsScriptAPI } from './api';
+import { isTypingAPI, getAPIModuleInfo } from '../../utils/doc';
 
 export function getCompletionItemsScript (projectPath: string, doc: TextDocument, docText: string, position: Position): CompletionList {
 	let snippetCompletionsList: CompletionList = {
@@ -7,10 +8,9 @@ export function getCompletionItemsScript (projectPath: string, doc: TextDocument
 		items: []
 	};
 
-	// 对于api需要
-	if(isTypingAPI(docText, position)) {
-		snippetCompletionsList = getCompletionItemsScriptAPI(projectPath, doc, docText, position);
-	}
+	// api补全
+	let apiModuleInfo = getAPIModuleInfo(docText);
+	snippetCompletionsList = getCompletionItemsScriptAPI(projectPath, doc, docText, position, apiModuleInfo);
 
 	return snippetCompletionsList;
 }

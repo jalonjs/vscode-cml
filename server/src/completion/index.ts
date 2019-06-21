@@ -6,23 +6,22 @@ import { getCompletionItemsScript } from './script';
 
 export function getCompletionItems (projectPath: string, doc: TextDocument, position: Position): CompletionList {
 	let docText = doc.getText();
-	
-	if (inTemplate(doc, docText, position)) {
-		return getCompletionItemsTemplate(projectPath, doc, docText, position);
-	}
-
-	if (inStyle(doc, docText, position)) {
-		return getCompletionItemsStyle(projectPath, doc, docText, position);
-	}
-	
-	if (inScript(doc, docText, position)) {
-		return getCompletionItemsScript(projectPath, doc, docText, position);
-	}
-
 	let snippetCompletionsList: CompletionList = {
 		isIncomplete: true,
 		items: []
 	};
+
+	if (inTemplate(doc, docText, position)) {
+		snippetCompletionsList = getCompletionItemsTemplate(projectPath, doc, docText, position);
+	}
+
+	if (inStyle(doc, docText, position)) {
+		snippetCompletionsList = getCompletionItemsStyle(projectPath, doc, docText, position);
+	}
+
+	if (inScript(doc, docText, position)) {
+		snippetCompletionsList = getCompletionItemsScript(projectPath, doc, docText, position);
+	}
 
 	return snippetCompletionsList;
 }

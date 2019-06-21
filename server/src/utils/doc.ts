@@ -1,8 +1,11 @@
 import { TextDocumentPositionParams, TextDocument, TextDocuments, Position } from 'vscode-languageserver';
-import * as parser from "@babel/parser";
-import traverse from "@babel/traverse";
-import * as types from "@babel/types";
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import * as parser from '@babel/parser';
+import traverse from '@babel/traverse';
+import * as types from '@babel/types';
 import generate from '@babel/generator';
+import rMap from './replaceMap';
 
 interface ComCls {
 	name: string;
@@ -21,26 +24,84 @@ export interface TypingComInfo {
 	value: string;
 }
 
-interface moduleMethod {
+export interface apiModuleInfo {
 	name: string;
-	args: []
-}
-
-interface moduleMethods {
-	methods: moduleMethod[];
+	handle: string;
 }
 
 export function getAST (code: string) {
-	const ast = parser.parse(code, {
-		sourceType: 'module',
-		// sourceFilename: join(__dirname, 'doc.js'),
-		"plugins": [
-			"jsx",
-			"flow",
-			"classProperties"
-		]
-	});
+	let ast = {};
+	code = code.replace(/\.([\s\n\r])/g, `${rMap.dotInEnd}$1`);
+	try {
+		ast = parser.parse(code, {
+			sourceType: 'module',
+			// sourceFilename: join(__dirname, 'doc.js'),
+			"plugins": [
+				"jsx",
+				"flow",
+				"classProperties"
+			]
+		});
+	} catch (e) {
+		console.error(e);
+	}
+
 	return ast;
+}
+
+export function traverseAST (code: string, handleMap: object) {
+	let ast = getAST(code);
+	traverse(ast, handleMap);
+}
+
+export function getAPIModuleInfo (docText: string): apiModuleInfo {
+	const apiNMs = ['chameleon-api', '@didi/chameleon-api'];
+	let code = docText.match(/<script(?!\s+cml-type="json")[\s\S]*?>([\s\S]*?)<\/script>/)[1];
+	let name = '';
+	let handle = '';
+	traverseAST(code, {
+		enter (path) {
+			if (types.isImportDeclaration(path.node) && apiNMs.includes(path.node.source.value)) {
+				name = path.node.source.value;
+				handle = path.node.specifiers[0].local.name;
+			}
+		}
+	});
+	return {
+		name,
+		handle
+	};
+}
+
+export function getAPIMethods (projectPath: string, doc: TextDocument, docText: string, position: Position, apiModuleInfo: apiModuleInfo): string[] {
+	const apiModuleName = apiModuleInfo.name;
+	let apiExportUri = join(projectPath, 'node_modules', apiModuleName, 'index.js');
+	let apiMethods = [];
+	let code = readFileSync(apiExportUri).toString('utf8');
+	traverseAST(code, {
+		enter (path) {
+			if (types.isExportDefaultDeclaration(path.node)) {
+				path.node.declaration.properties.forEach(prop => {
+					apiMethods.push(prop.value.name);
+				});
+			}
+		}
+	});
+	return apiMethods;
+}
+
+export function isTypingAPI (doc: TextDocument, docText: string, position: Position, apiModuleName: string): boolean {
+	const text = getTextStartToPosition(doc, docText, position);
+	if (!text.endsWith('.')) {
+		return false;
+	}
+
+	let typingName = '';
+	let typingNameMatch = text.match(/[\s\r\n](.+)\.$/);
+	if (typingNameMatch) {
+		typingName = typingNameMatch[1];
+	}
+	return typingName == apiModuleName;
 }
 
 export function getPropsByAST (code: string): ComCls {
@@ -49,7 +110,7 @@ export function getPropsByAST (code: string): ComCls {
 		props: {}
 	};
 
-	traverse(getAST(code), {
+	traverseAST(code, {
 		enter (path) {
 			if (types.isClassDeclaration(path.node)) {
 				comCls.name = path.node.id.name;
@@ -72,6 +133,7 @@ export function getPropsByAST (code: string): ComCls {
 			}
 		}
 	});
+
 	return comCls;
 }
 
@@ -90,8 +152,8 @@ export function getTypingComInfo (docText: string, position: Position): TypingCo
 				$2 = $2.replace(/[\.\[\]]/g, '_'); // {{a.b|a[b|0]}}
 				return `{{${$1}${$2}${$3}}}`;
 			}); // 替换掉babel不兼容的
-		const ast = getAST(code);
-		traverse(ast, {
+
+		traverseAST(code, {
 			enter (path) {
 				if (isNodeMatchPst(path.node, position)) {
 					if (types.isJSXText(path.node)) {
