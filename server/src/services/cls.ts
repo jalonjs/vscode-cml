@@ -42,7 +42,6 @@ export class CLS {
 		this.documentService.onDidChangeContent(this.onDidChangeContent.bind(this));
 		this.documentService.onDidSave(this.onDidSave.bind(this));
 	}
-
 	onCompletion ({ textDocument, position }: TextDocumentPositionParams): CompletionList {
 		const doc = this.documentService.getDocument(textDocument.uri)!;
 		this.projectPath = textDocument.uri.match(/^file:(.*)(?=\/src)/)[1];
@@ -70,7 +69,10 @@ export class CLS {
 
 	get capabilities (): ServerCapabilities {
 		return {
-			completionProvider: { resolveProvider: false }
+			completionProvider: {
+				resolveProvider: false,
+				triggerCharacters: ['.']
+			}
 		};
 	}
 }
