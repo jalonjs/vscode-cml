@@ -4,11 +4,14 @@ import {
 	IConnection,
 	CompletionList,
 	TextDocumentPositionParams,
-	TextDocumentChangeEvent
+	TextDocumentChangeEvent,
+	DocumentFormattingParams,
+	TextEdit
 } from 'vscode-languageserver';
 import { DocumentService } from './documentService';
 import { getCompletionItems } from '../completion';
 import { cmlLint } from '../linter';
+import { cmlFormat } from '../format';
 
 export class CLS {
 	private projectPath: string;
@@ -37,29 +40,38 @@ export class CLS {
 	}
 
 	private setupLSPHandlers () {
+		// 各种补全
 		this.lspConnection.onCompletion(this.onCompletion.bind(this));
+		// 格式化
+		this.lspConnection.onDocumentFormatting(this.onDocumentFormatting.bind(this));
+		// linter
 		this.documentService.onDidOpen(this.onDidOpen.bind(this));
 		this.documentService.onDidChangeContent(this.onDidChangeContent.bind(this));
 		this.documentService.onDidSave(this.onDidSave.bind(this));
 	}
 	onCompletion ({ textDocument, position }: TextDocumentPositionParams): CompletionList {
 		const doc = this.documentService.getDocument(textDocument.uri)!;
-		this.projectPath = textDocument.uri.match(/^file:(.*)(?=\/src)/)[1];
+		this.projectPath = this.getProjectPath(textDocument.uri);
 		return getCompletionItems(this.projectPath, doc, position);
 	}
 
+	onDocumentFormatting (documentFormattingParams: DocumentFormattingParams) {
+		const doc = this.documentService.getDocument(documentFormattingParams.textDocument.uri);
+		return cmlFormat(doc, documentFormattingParams);
+	}
+
 	onDidOpen (change: TextDocumentChangeEvent) {
-		this.projectPath = change.document.uri.match(/^file:(.*)(?=\/src)/)[1];
+		this.projectPath = this.getProjectPath(change.document.uri);
 		cmlLint(change.document, this.lspConnection, this.projectPath);
 	}
 
 	onDidSave (change: TextDocumentChangeEvent) {
-		this.projectPath = change.document.uri.match(/^file:(.*)(?=\/src)/)[1];
+		this.projectPath = this.getProjectPath(change.document.uri);
 		cmlLint(change.document, this.lspConnection, this.projectPath);
 	}
 
 	onDidChangeContent (change: TextDocumentChangeEvent) {
-		this.projectPath = change.document.uri.match(/^file:(.*)(?=\/src)/)[1];
+		this.projectPath = this.getProjectPath(change.document.uri);
 		cmlLint(change.document, this.lspConnection, this.projectPath);
 	}
 
@@ -72,7 +84,12 @@ export class CLS {
 			completionProvider: {
 				resolveProvider: false,
 				triggerCharacters: ['.']
-			}
+			},
+			documentFormattingProvider: true
 		};
+	}
+
+	getProjectPath (docUri: string) {
+		return docUri.match(/^file:(.*)(?=\/src)/)[1];
 	}
 }
