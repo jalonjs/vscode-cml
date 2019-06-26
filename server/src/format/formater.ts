@@ -22,8 +22,12 @@ let formater = {
 		});
 	},
 	Json (text: string, options: FormattingOptions): string {
+		let indentType = 'tab';
+		if (options.tabSize > 2) {
+			indentType = 'space';
+		}
 		let jsonFormatted = jsonFormat(JSON.parse(text), {
-			type: 'tab',
+			type: indentType,
 			size: options.tabSize
 		});
 		return jsonFormatted;

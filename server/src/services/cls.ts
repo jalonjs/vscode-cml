@@ -15,9 +15,11 @@ import { cmlFormat } from '../format';
 
 export class CLS {
 	private projectPath: string;
+	private lspConnection: IConnection;
 	private documentService: DocumentService;
 
-	constructor(private lspConnection: IConnection) {
+	constructor(lspConnection: IConnection) {
+		this.lspConnection = lspConnection;
 		this.documentService = new DocumentService(this.lspConnection);
 	}
 
@@ -42,13 +44,14 @@ export class CLS {
 	private setupLSPHandlers () {
 		// 各种补全
 		this.lspConnection.onCompletion(this.onCompletion.bind(this));
-		// 格式化
+		// format
 		this.lspConnection.onDocumentFormatting(this.onDocumentFormatting.bind(this));
 		// linter
 		this.documentService.onDidOpen(this.onDidOpen.bind(this));
 		this.documentService.onDidChangeContent(this.onDidChangeContent.bind(this));
 		this.documentService.onDidSave(this.onDidSave.bind(this));
 	}
+
 	onCompletion ({ textDocument, position }: TextDocumentPositionParams): CompletionList {
 		const doc = this.documentService.getDocument(textDocument.uri)!;
 		this.projectPath = this.getProjectPath(textDocument.uri);
@@ -90,6 +93,14 @@ export class CLS {
 	}
 
 	getProjectPath (docUri: string) {
-		return docUri.match(/^file:(.*)(?=\/src)/)[1];
+		let proPathMatchSrc = docUri.match(/^file:(.*)(?=\/src)/);
+		let proPathMatchNodeModules = docUri.match(/^file:(.*)(?=\/node_modules)/);
+		let projectPath = '';
+		if (proPathMatchSrc) {
+			projectPath = proPathMatchSrc[1];
+		} else if (proPathMatchNodeModules) {
+			projectPath = proPathMatchNodeModules[1];
+		}
+		return projectPath;
 	}
 }
