@@ -7,6 +7,7 @@
 - 指令
 - css、less支持
 - linter校验及提示
-- api补全等
+- api补全
+- format等
 
 其他功能持续增加中...
