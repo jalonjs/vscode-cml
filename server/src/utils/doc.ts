@@ -43,7 +43,7 @@ export function getAST (code: string) {
 			]
 		});
 	} catch (e) {
-		console.error(e);
+		// console.error(e);
 	}
 
 	return ast;
@@ -51,7 +51,11 @@ export function getAST (code: string) {
 
 export function traverseAST (code: string, handleMap: object) {
 	let ast = getAST(code);
-	traverse(ast, handleMap);
+	try {
+		traverse(ast, handleMap);
+	} catch (e) {
+		// console.error(e);
+	}
 }
 
 export function getAPIModuleInfo (docText: string): apiModuleInfo {
@@ -75,18 +79,20 @@ export function getAPIModuleInfo (docText: string): apiModuleInfo {
 
 export function getAPIMethods (projectPath: string, doc: TextDocument, docText: string, position: Position, apiModuleInfo: apiModuleInfo): string[] {
 	const apiModuleName = apiModuleInfo.name;
-	let apiExportUri = join(projectPath, 'node_modules', apiModuleName, 'index.js');
 	let apiMethods = [];
-	let code = readFileSync(apiExportUri).toString('utf8');
-	traverseAST(code, {
-		enter (path) {
-			if (types.isExportDefaultDeclaration(path.node)) {
-				path.node.declaration.properties.forEach(prop => {
-					apiMethods.push(prop.value.name);
-				});
+	if (apiModuleName) {
+		let apiExportUri = join(projectPath, 'node_modules', apiModuleName, 'index.js');
+		let code = readFileSync(apiExportUri).toString('utf8');
+		traverseAST(code, {
+			enter (path) {
+				if (types.isExportDefaultDeclaration(path.node)) {
+					path.node.declaration.properties.forEach(prop => {
+						apiMethods.push(prop.value.name);
+					});
+				}
 			}
-		}
-	});
+		});
+	}
 	return apiMethods;
 }
 
