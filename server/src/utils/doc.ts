@@ -1,5 +1,5 @@
 import { TextDocumentPositionParams, TextDocument, TextDocuments, Position } from 'vscode-languageserver';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import * as parser from '@babel/parser';
 import traverse from '@babel/traverse';
@@ -82,16 +82,18 @@ export function getAPIMethods (projectPath: string, doc: TextDocument, docText: 
 	let apiMethods = [];
 	if (apiModuleName) {
 		let apiExportUri = join(projectPath, 'node_modules', apiModuleName, 'index.js');
-		let code = readFileSync(apiExportUri).toString('utf8');
-		traverseAST(code, {
-			enter (path) {
-				if (types.isExportDefaultDeclaration(path.node)) {
-					path.node.declaration.properties.forEach(prop => {
-						apiMethods.push(prop.value.name);
-					});
+		if (existsSync(apiExportUri)) {
+			let code = readFileSync(apiExportUri).toString('utf8');
+			traverseAST(code, {
+				enter (path) {
+					if (types.isExportDefaultDeclaration(path.node)) {
+						path.node.declaration.properties.forEach(prop => {
+							apiMethods.push(prop.value.name);
+						});
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 	return apiMethods;
 }
