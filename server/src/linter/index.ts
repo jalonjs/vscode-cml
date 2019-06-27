@@ -68,8 +68,8 @@ export async function cmlLint (textDocument: TextDocument, connection: IConnecti
 
 	// 校验错误直接在文件里标出
 	let rci = resultsNormative.ci;
+	let diagnostics: Diagnostic[] = [];
 	if (rci.length) {
-		let diagnostics: Diagnostic[] = [];
 		rci.forEach(item => {
 			let filePath = resolve(projectPath, item.file);
 			if (textDocument.uri.match(filePath)) {
@@ -107,9 +107,6 @@ export async function cmlLint (textDocument: TextDocument, connection: IConnecti
 				});
 			}
 		});
-
-
-		connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 	}
-
+	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
