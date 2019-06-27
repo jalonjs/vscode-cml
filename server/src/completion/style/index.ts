@@ -17,9 +17,13 @@ export function getCompletionItemsStyle (projectPath: string, doc: TextDocument,
 	const styleText = lines.slice(styleLineStartIndex + 1, styleLineEndIndex).join('\n');
 	let cssDoc = TextDocument.create('', 'css', 1, styleText);
 	let stylesheet = service.parseStylesheet(cssDoc);
-	position.line = position.line - (styleLineStartIndex + 1);
-	let result = getLESSLanguageService().doComplete(cssDoc, position, stylesheet);
-	
+
+	let stylePosition = {
+		line: position.line - (styleLineStartIndex + 1),
+		character: position.character
+	};
+	let result = getLESSLanguageService().doComplete(cssDoc, stylePosition, stylesheet);
+
 	let CPL = {
 		isIncomplete: result.isIncomplete,
 		items: []
