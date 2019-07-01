@@ -1,4 +1,4 @@
-# Chameleon vscode 扩展插件
+# Chameleon vscode 扩展插件（测试版快于正式版，代码在alpha分支）
 
 0.2.0版本功能
 - 文件关联
